@@ -1,11 +1,12 @@
 import cv2
 import numpy as np
+from test import proc_screen, find_traffic_light, transform2
 
 
 def process_images(original_images):
     processed_images = []
     for original_image in original_images:
-        processed_images.append(process_image(original_image))
+        processed_images.append(process_image_v3(original_image))
 
     processed_images = np.array(processed_images)
     return processed_images
@@ -49,7 +50,7 @@ def process_images(original_images):
 #     processed_image = cv2.add(canny, masked)
 #     return processed_image
 
-def process_image(original_image):
+def process_image_v1(original_image):
     Y = original_image * 1
     minimap = Y[130:180, 224:295, :]
     vertices_roi_minimap_warped = np.array([[300, 190], [228, 190], [300, 140], [300, 190]])
@@ -100,5 +101,30 @@ def process_image(original_image):
         pass
 
     canny_warped = cv2.fillPoly(canny_warped, np.array([[[229, 150], [300, 150], [300, 200], [229, 200]]]), 0) # закрашиваем место под цветную миникарту
-    processed_image = cv2.add(canny_warped, warped_mm)
+    # processed_image1 = cv2.add(canny_warped, warped_mm)
+
+    processed_image2 = find_traffic_light(original_image)
+    processed_image = cv2.add(canny_warped, processed_image2)
     return processed_image
+
+
+def process_image_v2(original_image):
+    processed_image1 = proc_screen(original_image)
+    processed_image2 = find_traffic_light(original_image)
+    processed_image = cv2.add(processed_image1, processed_image2)
+
+    return processed_image
+
+
+def process_image_v3(original_image):
+    processed_image1 = transform2(original_image)
+    processed_image2 = find_traffic_light(original_image)
+    processed_image = cv2.add(processed_image1, processed_image2)
+
+    return processed_image
+
+
+# file = np.load(f"D:/Ayudesee/Other/Data/ets-data-raw-rgb/training_data-1.npy", allow_pickle=True)
+# screen = process_image_v3(file[0][0])
+# cv2.imshow('screen', screen)
+# cv2.waitKey(0)

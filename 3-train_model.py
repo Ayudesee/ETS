@@ -3,7 +3,6 @@ import tensorflow as tf
 import os
 from process_image import process_images
 from alexnet import alexnet_model_modified
-from models import my_model
 from random import shuffle
 
 # os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
@@ -36,20 +35,19 @@ if gpus:
 FILE_I_END = 1
 
 while True:
-    file_name = 'D:/Ayudesee/Other/Data/ets-data-shuffled-05-cutoff/training_data-{}.npy'.format(FILE_I_END)
+    file_name = 'D:/Ayudesee/Other/Data/ets-data-shuffled-9-7-cutoff/training_data-{}.npy'.format(FILE_I_END)
     if os.path.isfile(file_name):
-        print(FILE_I_END)
         FILE_I_END += 1
     else:
-        print('File does not exist, starting fresh!', FILE_I_END)
+        print('FILE_I_END = ', FILE_I_END)
         break
 
 WIDTH = 300
 HEIGHT = 200
 LR = 1e-3
-EPOCHS = 10
+EPOCHS = 3
 
-MODEL_NAME = 'model_wrapped_1-682-05-cutoff'
+MODEL_NAME = 'model_proc_img_v3'
 PREV_MODEL = ''
 logdir = f"logs/{MODEL_NAME}"
 tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=logdir)
@@ -62,14 +60,7 @@ a = [0, 0, 1, 0, 0]
 d = [0, 0, 0, 1, 0]
 n = [0, 0, 0, 0, 1]
 
-# model = googlenet(WIDTH, HEIGHT, 3, LR, output=9, model_name=MODEL_NAME)
-# model = my_model(WIDTH, HEIGHT, output=9)
 model = alexnet_model_modified(img_shape=(HEIGHT, WIDTH, 3), n_classes=5)
-# model = tf.keras.applications.Xception(weights=None, input_shape=(WIDTH, HEIGHT, 3), classes=9)
-# model.compile(optimizer='Adam', loss='categorical_crossentropy', metrics=['accuracy'])
-
-# model = sentnet_color_2d(WIDTH, HEIGHT, 3, LR, output=9, model_name=MODEL_NAME)
-# model = alexnet(WIDTH, HEIGHT, LR, output=9)
 
 if LOAD_MODEL:
     model.load(PREV_MODEL)
@@ -80,9 +71,8 @@ for e in range(EPOCHS):
     data_order = [i for i in range(1, FILE_I_END)]  #   data_order = [i for i in range(1, FILE_I_END)]
     shuffle(data_order)
     for count, i in enumerate(data_order):
-
         try:
-            file_name = 'D:/Ayudesee/Other/Data/ets-data-shuffled/training_data-{}.npy'.format(i)
+            file_name = 'D:/Ayudesee/Other/Data/ets-data-shuffled-9-7-cutoff/training_data-{}.npy'.format(i)
             train_data = np.load(file_name, allow_pickle=True)
             print(f'training_data-{i}.npy, _EPOCH:{e+1}, ({count+1}/{FILE_I_END-1})')
 
@@ -97,15 +87,11 @@ for e in range(EPOCHS):
             test_y = np.array([i[1] for i in test])
             test_x = process_images(test_x)
 
-            # model.fit(X, Y, epochs=1, batch_size=20, validation_data=(test_x, test_y))
-            # model.fit(X, Y, batch_size=10, epochs=1)
-            # model.fit({'input': X}, {'targets': Y}, n_epoch=1, batch_size=10, validation_set=({'input': test_x}, {'targets': test_y}),
-            #           snapshot_step=2500, show_metric=True, run_id=MODEL_NAME)
-            model.fit(X, Y, epochs=1, batch_size=5, validation_data=(test_x, test_y), callbacks=[tensorboard_callback])
+            model.fit(X, Y, epochs=1, batch_size=10, validation_data=(test_x, test_y), verbose=0)# , callbacks=tensorboard_callback)
 
-            if count % 30 == 0:
+            if count % 30 == 0 or count == FILE_I_END-1:
                 print('SAVING MODEL!')
-                model.save(MODEL_NAME)
+                model.save(f"models/{MODEL_NAME}.h5")
 
         except Exception as err:
             print(str(err))

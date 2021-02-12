@@ -1,7 +1,8 @@
 import cv2
 import numpy as np
 import os
-from process_image import process_image
+
+
 
 # 49, 54город,983 - светофор,  700 - туман, 300 - ночь+объезд, 406 - солнце, ничего не видно
 
@@ -22,17 +23,26 @@ def main(start_file_number):
     for i in range(FILE_I_END):
         if start_file_number + i > FILE_I_END:
             break
-        screen = np.load(f"D:/Ayudesee/Other/Data/ets-data-raw-rgb/training_data-{start_file_number + i}.npy", allow_pickle=True)
+        screen = np.load(f"D:/Ayudesee/Other/Data/ets-data-raw-rgb/training_data-{start_file_number + i}.npy",
+                         allow_pickle=True)
 
         n = 0
         while n < 500:
-            print(f"n:{n}, {screen[n][1]}, file:{start_file_number+i}")
+            print(f"n:{n}, {screen[n][1]}, file:{start_file_number + i}")
 
-            # processed_image = proc_screen(screen[n][0])
-            processed_image = find_traffic_light(screen[n][0])
+            # cv2.line(screen[n][0], (105, 190), (145, 110), (255, 255, 0), 1)
+            # cv2.line(screen[n][0], (155, 110), (195, 190), (255, 255, 0), 1)
+
+            processed_image1 = transform2(screen[n][0])
+            # processed_image1 = proc_screen(screen[n][0])
+            processed_image2 = find_traffic_light(screen[n][0])
+            processed_image = cv2.add(processed_image1, processed_image2)
+
+
+
             cv2.imshow('raw', screen[n][0])
             cv2.imshow('processed', processed_image)
-            if cv2.waitKey(0) & 0xFF == ord('q'):  #next file
+            if cv2.waitKey(0) & 0xFF == ord('q'):  # next file
                 cv2.destroyAllWindows()
                 break
             n += 1
@@ -40,84 +50,83 @@ def main(start_file_number):
 
 
 def proc_screen(original_image):
-        vertices_road = np.array([[90, 200], [130, 150], [170, 150], [210, 200]])
-        left_coordinate = []
-        right_coordinate = []
-        hsv = cv2.cvtColor(original_image, cv2.COLOR_RGB2HSV)
-        line_image = original_image * 0
-        gray = cv2.cvtColor(original_image, cv2.COLOR_RGB2GRAY)
-        cv2.imshow('raw', original_image)
+    vertices_road = np.array([[90, 200], [130, 150], [170, 150], [210, 200]])
+    left_coordinate = []
+    right_coordinate = []
+    mask = np.full_like(original_image, fill_value=0)
+    cv2.fillPoly(mask, [vertices_road], (255, 255, 255))
 
+    line_image = original_image * 0
+    gray = cv2.cvtColor(original_image, cv2.COLOR_RGB2GRAY)
 
-        pts1 = np.float32([[130, 120], [170, 120], [90, 200], [210, 200]])  # road
-        pts2 = np.float32([[90, 20], [210, 20], [20, 200], [280, 200]])
-        M = cv2.getPerspectiveTransform(pts1, pts2)
-        warped = cv2.warpPerspective(gray, M, (300, 200))
+    pts1 = np.float32([[130, 120], [170, 120], [90, 200], [210, 200]])  # road
+    pts2 = np.float32([[90, 20], [210, 20], [20, 200], [280, 200]])
+    M = cv2.getPerspectiveTransform(pts1, pts2)
+    warped = cv2.warpPerspective(gray, M, (300, 200))
 
-        minLineLength = 10
-        maxLineGap = 8
+    minLineLength = 10
+    maxLineGap = 8
 
-        canny = cv2.Canny(image=warped, threshold1=80, threshold2=150, apertureSize=3)  #80 150 good
-        canny = cv2.GaussianBlur(canny, (3, 3), 0)
+    canny = cv2.Canny(image=warped, threshold1=80, threshold2=150, apertureSize=3)  # 80 150 good
+    canny = cv2.GaussianBlur(canny, (3, 3), 0)
+    lines = cv2.HoughLinesP(image=canny, rho=cv2.HOUGH_PROBABILISTIC, theta=np.pi / 180, threshold=20,
+                            minLineLength=minLineLength, maxLineGap=maxLineGap)
+    if lines is not None:
+        for line in lines:
+            x1, y1, x2, y2 = line[0]
+            if y2 - y1 == 0:
+                continue
+            slope = (x2 - x1) / (y2 - y1)
+            angle = np.rad2deg(np.arctan(slope))
+            if abs(angle) <= 65 and slope < 0:
+                left_coordinate.append([x1, y1, x2, y2])
+                cv2.line(line_image, (x1, y1), (x2, y2), (255, 0, 0), 2)
+            elif abs(angle) <= 65 and slope > 0:
+                right_coordinate.append([x1, y1, x2, y2])
+                cv2.line(line_image, (x1, y1), (x2, y2), (0, 0, 255), 2)
 
-        cv2.imshow('canny', canny)
-        lines = cv2.HoughLinesP(image=canny, rho=cv2.HOUGH_PROBABILISTIC, theta=np.pi / 180, threshold=20,
-                                minLineLength=minLineLength, maxLineGap=maxLineGap)
-        if lines is not None:
-            for line in lines:
-                x1, y1, x2, y2 = line[0]
-                if y2 - y1 == 0:
-                    continue
-                slope = (x2 - x1) / (y2 - y1)
-                angle = np.rad2deg(np.arctan(slope))
-                if abs(angle) <= 65 and slope < 0:
-                    left_coordinate.append([x1, y1, x2, y2])
-                    cv2.line(line_image, (x1, y1), (x2, y2), (255, 255, 255), 2)
-                elif abs(angle) <= 65 and slope > 0:
-                    right_coordinate.append([x1, y1, x2, y2])
-                    cv2.line(line_image, (x1, y1), (x2, y2), (0, 255, 255), 2)
-
-        M = cv2.getPerspectiveTransform(pts2, pts1)
-        line_image = cv2.warpPerspective(line_image, M, (300, 200))
-        cv2.imshow('warped', warped)
-        cv2.imshow('hsv', hsv)
-        processed_image = cv2.addWeighted(hsv, 1,  line_image, 1, 1)
-        return processed_image
+    # M = cv2.getPerspectiveTransform(pts2, pts1)
+    # line_image = cv2.warpPerspective(line_image, M, (300, 200))
+    canny = cv2.cvtColor(canny, cv2.COLOR_GRAY2RGB)
+    processed_image = cv2.add(canny, line_image)
+    return processed_image
 
 
 def transform2(original_image):
-    pts1_mm = np.float32([[0, 0], [71, 0], [0, 50], [71, 50]])  # minimap
-    pts2_mm = np.float32([[229, 150], [300, 150], [229, 200], [300, 200]])
+    # pts1_mm = np.float32([[0, 0], [71, 0], [0, 50], [71, 50]])  # minimap
+    # pts2_mm = np.float32([[229, 150], [300, 150], [229, 200], [300, 200]])
 
-    pts1 = np.float32([[140, 120], [160, 120], [90, 200], [210, 200]])  # road
+    pts1 = np.float32([[145, 110], [155, 110], [105, 190], [195, 190]])  # road
     pts2 = np.float32([[100, 0], [200, 0], [100, 200], [200, 200]])
 
     Y = original_image * 1
-    minimap = Y[130:180, 224:295, :]
+    # minimap = Y[130:180, 224:295, :]
     vertices_roi_minimap_warped = np.array([[300, 190], [228, 190], [300, 140], [300, 190]])
 
     M = cv2.getPerspectiveTransform(pts1, pts2)
-    M_m = cv2.getPerspectiveTransform(pts1_mm, pts2_mm)
-    warped_mm = cv2.warpPerspective(minimap, M_m, (300, 200))
+    # M_m = cv2.getPerspectiveTransform(pts1_mm, pts2_mm)
+    # warped_mm = cv2.warpPerspective(minimap, M_m, (300, 200))
 
     warped = cv2.warpPerspective(original_image, M, (300, 200))
 
     mask = np.full_like(warped, 255)
-    cv2.fillPoly(mask, [vertices_roi_minimap_warped], (0, 0, 0))
+    # cv2.fillPoly(mask, [vertices_roi_minimap_warped], (0, 0, 0))
     masked = cv2.bitwise_and(warped, mask)
 
     # CANNY
-    canny_warped = cv2.GaussianBlur(masked, (3, 3), 0)
+    canny_warped = cv2.GaussianBlur(masked, (5, 5), 0)
     canny_warped = cv2.cvtColor(canny_warped, cv2.COLOR_RGB2GRAY)
+
+    cv2.imshow('canny_warped', canny_warped)
     canny_warped = cv2.Canny(canny_warped, threshold1=80, threshold2=100, apertureSize=3)
 
     # #FINDING LINES
-    minLineLength = 30
-    maxLineGap = 10
+    minLineLength = 5
+    maxLineGap = 30
     left_coordinate = []
     right_coordinate = []
     try:
-        lines = cv2.HoughLinesP(image=canny_warped, rho=cv2.HOUGH_PROBABILISTIC, theta=np.pi / 180, threshold=25,
+        lines = cv2.HoughLinesP(image=canny_warped, rho=cv2.HOUGH_PROBABILISTIC, theta=np.pi / 180, threshold=15,
                                 minLineLength=minLineLength, maxLineGap=maxLineGap)
         canny_warped = cv2.cvtColor(canny_warped, cv2.COLOR_GRAY2RGB)
 
@@ -128,25 +137,25 @@ def transform2(original_image):
                     continue
                 slope = (x2 - x1) / (y2 - y1)
                 angle = np.rad2deg(np.arctan(slope))
-                if abs(angle) <= 60 and slope < 0:
+                if abs(angle) <= 65 and slope < 0:
                     left_coordinate.append([x1, y1, x2, y2])
                     cv2.line(canny_warped, (x1, y1), (x2, y2), (0, 255, 0), 2)
-                elif abs(angle) <= 60 and slope > 0:
+                elif abs(angle) <= 65 and slope > 0:
                     right_coordinate.append([x1, y1, x2, y2])
                     cv2.line(canny_warped, (x1, y1), (x2, y2), (255, 0, 0), 2)
     except:
         print('no lines')
 
-    canny_warped = cv2.fillPoly(canny_warped, np.array([[[229, 150], [300, 150], [300, 200], [229, 200]]]), 0)
-    processed_image = cv2.add(canny_warped, warped_mm)
+    canny_warped = cv2.fillPoly(canny_warped, np.array([[[229, 120], [300, 120], [300, 200], [229, 200]]]), 0)
+    # processed_image = cv2.add(canny_warped, warped_mm)
 
-    return processed_image
+    return canny_warped
 
 
 def find_traffic_light(original_image):
-    #116, 86, 63 - 168, 255, 255 RED
-    #88, 83, 175 - 96, 255, 255 - YELLOW
-    #32, 78, 58 - 73, 255, 255 - GREEN
+    # 116, 86, 63 - 168, 255, 255 RED
+    # 88, 83, 175 - 96, 255, 255 - YELLOW
+    # 32, 78, 58 - 73, 255, 255 - GREEN
     hsv = cv2.cvtColor(original_image, cv2.COLOR_RGB2HSV)
     lower_red = np.array([116, 86, 63])
     upper_red = np.array([168, 255, 255])
@@ -158,8 +167,6 @@ def find_traffic_light(original_image):
     mask_y = cv2.inRange(hsv, lower_yellow, upper_yellow)
     mask_g = cv2.inRange(hsv, lower_green, upper_green)
 
-
-
     red_screen = cv2.bitwise_and(original_image, original_image, mask=mask_r)
     yellow_screen = cv2.bitwise_and(original_image, original_image, mask=mask_y)
     green_screen = cv2.bitwise_and(original_image, original_image, mask=mask_g)
@@ -169,7 +176,7 @@ def find_traffic_light(original_image):
     return processed_image
 
 
-def find_color_with_taskbars():  #116, 86, 63 - 168, 255, 255
+def find_color_with_taskbars():  # 116, 86, 63 - 168, 255, 255
     file = np.load(f"D:/Ayudesee/Other/Data/ets-data-raw-rgb/training_data-58.npy", allow_pickle=True)
     original_image = file[184][0]
     cv2.namedWindow('Trackbars')
@@ -209,7 +216,7 @@ def nothing(x):
     pass
 
 
-main(start_file_number=54)
+main(start_file_number=143)
 
 # find_color_with_taskbars()
 

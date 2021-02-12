@@ -2,7 +2,7 @@ import tensorflow as tf
 import time
 import os
 from random import random
-from process_image import process_image
+from process_image import process_image_v3
 from imagegrab import grab_screen_rgb
 import numpy as np
 import cv2
@@ -21,7 +21,7 @@ EPOCHS = 10
 
 
 def main():
-    filepath = 'model_wrapped_1-682'
+    filepath = 'models/model_proc_img_v3.h5'
     paused = False
 
     model = tf.keras.models.load_model(filepath=filepath)
@@ -30,15 +30,16 @@ def main():
         time.sleep(1)
 
     while True:
+        # print(time.time())
         if not paused:
             screen = grab_screen_rgb(640, 34, 1920, 834)
             screen = cv2.resize(screen, (WIDTH, HEIGHT))
-            screen = process_image(screen)
+            screen = process_image_v3(screen)
             cv2.imshow('window', screen)
             cv2.waitKey(1)
 
             screen = np.reshape(screen, (-1, HEIGHT, WIDTH, 3))
-            prediction = model.predict(screen)
+            prediction = model.predict(screen) * np.array([1, 0.8, 0.26, 0.26, 1])
 
             mode_choice = np.argmax(prediction)
 
@@ -51,19 +52,24 @@ def main():
             elif mode_choice == 2:
                 left()
                 choice_picked = 'left'
-                time.sleep(0.02)
+                time.sleep(0.095)
                 ReleaseKey(A)
             elif mode_choice == 3:
                 right()
                 choice_picked = 'right'
-                time.sleep(0.02)
+                time.sleep(0.095)
                 ReleaseKey(D)
             elif mode_choice == 4:
-                no_keys()
-                choice_picked = 'no_keys'
+                if random() > 0.3:
+                    straight()
+                    choice_picked = 'no_keys(straight)'
+                else:
+                    no_keys()
+                    choice_picked = 'no_keys'
+
 
             np.set_printoptions(formatter={'float': '{: 0.2f}'.format})
-            print(choice_picked, prediction)
+            print(prediction, choice_picked)
 
         keys = key_check()
         if 'T' in keys:

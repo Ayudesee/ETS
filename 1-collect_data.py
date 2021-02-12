@@ -9,11 +9,15 @@ from getkeys import key_check
 
 WIDTH = 300
 HEIGHT = 200
-w = [1, 0, 0, 0, 0]
-s = [0, 1, 0, 0, 0]
-a = [0, 0, 1, 0, 0]
-d = [0, 0, 0, 1, 0]
-n = [0, 0, 0, 0, 1]
+w = [1, 0, 0, 0, 0, 0, 0, 0, 0]
+s = [0, 1, 0, 0, 0, 0, 0, 0, 0]
+a = [0, 0, 1, 0, 0, 0, 0, 0, 0]
+d = [0, 0, 0, 1, 0, 0, 0, 0, 0]
+wa = [0, 0, 0, 0, 1, 0, 0, 0, 0]
+wd = [0, 0, 0, 0, 0, 1, 0, 0, 0]
+sa = [0, 0, 0, 0, 0, 0, 1, 0, 0]
+sd = [0, 0, 0, 0, 0, 0, 0, 1, 0]
+nk = [0, 0, 0, 0, 0, 0, 0, 0, 1]
 
 starting_value = 1
 
@@ -29,16 +33,14 @@ while True:
 
 
 def keys_to_output(keys):
-    output = [0, 0, 0, 0, 0]  # [W, S, A, D, NoKey]
-
     if 'W' in keys and 'A' in keys:
-        output = a
+        output = wa
     elif 'W' in keys and 'D' in keys:
-        output = d
+        output = wd
     elif 'S' in keys and 'A' in keys:
-        output = s
+        output = sa
     elif 'S' in keys and 'D' in keys:
-        output = s
+        output = sd
     elif 'W' in keys:
         output = w
     elif 'S' in keys:
@@ -48,7 +50,7 @@ def keys_to_output(keys):
     elif 'D' in keys:
         output = d
     else:
-        output = n
+        output = nk
 
     return output
 
