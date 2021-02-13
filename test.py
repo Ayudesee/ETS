@@ -7,7 +7,7 @@ import os
 # 49, 54город,983 - светофор,  700 - туман, 300 - ночь+объезд, 406 - солнце, ничего не видно
 
 
-def main(start_file_number):
+def main_func(start_file_number):
     FILE_I_END = 1
     while True:
         file_name = f'D:/Ayudesee/Other/Data/ets-data-raw-rgb/training_data-{FILE_I_END}.npy'
@@ -33,8 +33,9 @@ def main(start_file_number):
             # cv2.line(screen[n][0], (105, 190), (145, 110), (255, 255, 0), 1)
             # cv2.line(screen[n][0], (155, 110), (195, 190), (255, 255, 0), 1)
 
-            processed_image1 = transform2(screen[n][0])
+            # processed_image1 = transform2(screen[n][0])
             # processed_image1 = proc_screen(screen[n][0])
+            processed_image1 = sobel(screen[n][0])
             processed_image2 = find_traffic_light(screen[n][0])
             processed_image = cv2.add(processed_image1, processed_image2)
 
@@ -97,11 +98,10 @@ def transform2(original_image):
     # pts2_mm = np.float32([[229, 150], [300, 150], [229, 200], [300, 200]])
 
     pts1 = np.float32([[145, 110], [155, 110], [105, 190], [195, 190]])  # road
-    pts2 = np.float32([[100, 0], [200, 0], [100, 200], [200, 200]])
+    pts2 = np.float32([[130, -50], [170, -50], [100, 200], [200, 200]])
 
-    Y = original_image * 1
+    # Y = original_image * 1
     # minimap = Y[130:180, 224:295, :]
-    vertices_roi_minimap_warped = np.array([[300, 190], [228, 190], [300, 140], [300, 190]])
 
     M = cv2.getPerspectiveTransform(pts1, pts2)
     # M_m = cv2.getPerspectiveTransform(pts1_mm, pts2_mm)
@@ -117,16 +117,16 @@ def transform2(original_image):
     canny_warped = cv2.GaussianBlur(masked, (5, 5), 0)
     canny_warped = cv2.cvtColor(canny_warped, cv2.COLOR_RGB2GRAY)
 
-    cv2.imshow('canny_warped', canny_warped)
+    # cv2.imshow('canny_warped', canny_warped)
     canny_warped = cv2.Canny(canny_warped, threshold1=80, threshold2=100, apertureSize=3)
 
     # #FINDING LINES
-    minLineLength = 5
+    minLineLength = 2
     maxLineGap = 30
     left_coordinate = []
     right_coordinate = []
     try:
-        lines = cv2.HoughLinesP(image=canny_warped, rho=cv2.HOUGH_PROBABILISTIC, theta=np.pi / 180, threshold=15,
+        lines = cv2.HoughLinesP(image=canny_warped, rho=1, theta=np.pi / 180, threshold=20,
                                 minLineLength=minLineLength, maxLineGap=maxLineGap)
         canny_warped = cv2.cvtColor(canny_warped, cv2.COLOR_GRAY2RGB)
 
@@ -134,20 +134,20 @@ def transform2(original_image):
             for line in lines:
                 x1, y1, x2, y2 = line[0]
                 if y2 - y1 == 0:
+                    # cv2.line(canny_warped, (x1, y1), (x2, y2), (100, 100, 100), 3)
                     continue
                 slope = (x2 - x1) / (y2 - y1)
                 angle = np.rad2deg(np.arctan(slope))
-                if abs(angle) <= 65 and slope < 0:
+                if abs(angle) <= 60 and slope < 0:
                     left_coordinate.append([x1, y1, x2, y2])
-                    cv2.line(canny_warped, (x1, y1), (x2, y2), (0, 255, 0), 2)
-                elif abs(angle) <= 65 and slope > 0:
+                    # cv2.line(canny_warped, (x1, y1), (x2, y2), (0, 255, 0), 3)
+                elif abs(angle) <= 60 and slope > 0:
                     right_coordinate.append([x1, y1, x2, y2])
-                    cv2.line(canny_warped, (x1, y1), (x2, y2), (255, 0, 0), 2)
+                    # cv2.line(canny_warped, (x1, y1), (x2, y2), (255, 0, 0), 3)
     except:
         print('no lines')
 
-    canny_warped = cv2.fillPoly(canny_warped, np.array([[[229, 120], [300, 120], [300, 200], [229, 200]]]), 0)
-    # processed_image = cv2.add(canny_warped, warped_mm)
+    canny_warped = cv2.fillPoly(canny_warped, np.array([[[225, 130], [290, 130], [290, 200], [225, 200]]]), 0)
 
     return canny_warped
 
@@ -212,12 +212,48 @@ def find_color_with_taskbars():  # 116, 86, 63 - 168, 255, 255
     return processed_image
 
 
+def find_edges_with_sobel():
+    file = np.load(f"D:/Ayudesee/Other/Data/ets-data-raw-rgb/training_data-58.npy", allow_pickle=True)
+    original_image = file[184][0]
+    cv2.namedWindow('Trackbars')
+    gray = cv2.cvtColor(original_image, cv2.COLOR_RGB2GRAY)
+    cv2.createTrackbar("dx", "Trackbars", 1, 9, nothing)
+    cv2.createTrackbar("dy", "Trackbars", 1, 9, nothing)
+    cv2.createTrackbar("ksize", "Trackbars", 3, 17, nothing)
+
+    while True:
+        dx = cv2.getTrackbarPos("dx", "Trackbars")
+        dy = cv2.getTrackbarPos("dy", "Trackbars")
+        ksize = cv2.getTrackbarPos("ksize", "Trackbars")
+        if ksize % 2 == 0:
+            ksize += 1
+
+        processed_image = cv2.Sobel(gray, ddepth=cv2.CV_8U, dx=dx, dy=dy, ksize=ksize)
+
+        cv2.imshow('raw', original_image)
+        cv2.imshow('processed_image', processed_image)
+        if cv2.waitKey(1) == 27:
+            break
+
+    # processed_image = original_image
+    return processed_image
+
+
 def nothing(x):
     pass
 
 
-main(start_file_number=143)
+def sobel(original_image):
+    gray = cv2.cvtColor(original_image, cv2.COLOR_RGB2GRAY)
+    processed_image = cv2.Sobel(gray, ddepth=cv2.CV_8U, dx=2, dy=1, ksize=5)
+    processed_image = cv2.cvtColor(processed_image, cv2.COLOR_GRAY2RGB)
+    processed_image = cv2.fillPoly(processed_image, np.array([[[225, 130], [290, 130], [290, 180], [225, 180]]]), 0)
+
+    return processed_image
+
+
+# main(start_file_number=320)
 
 # find_color_with_taskbars()
-
+# find_edges_with_sobel()
 

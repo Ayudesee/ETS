@@ -5,16 +5,15 @@ import os
 FILE_I_END = 1
 
 while True:
-    file_name = 'D:/Ayudesee/Other/Data/ets-data-raw-rgb/training_data-{}.npy'.format(FILE_I_END)
+    file_name = 'D:/Ayudesee/Other/Data/ets-data-choices/choices-{}.csv'.format(FILE_I_END)
 
     if os.path.isfile(file_name):
-        print('File exists, moving along', FILE_I_END)
         FILE_I_END += 1
     else:
-        print('File does not exist, starting fresh!', FILE_I_END)
+        print(f'files found: {FILE_I_END - 1}')
         break
 
-fullsum = np.full(5, 0)
+fullsum = np.full(9, 0)
 
 for _i in range(1, FILE_I_END):
     df = pd.read_csv(f'D:/Ayudesee/Other/Data/ets-data-choices/choices-{_i}.csv')
@@ -24,11 +23,15 @@ for _i in range(1, FILE_I_END):
     fullsum[1] += (df["s"] == 1).sum()
     fullsum[2] += (df["a"] == 1).sum()
     fullsum[3] += (df["d"] == 1).sum()
-    fullsum[4] += (df["n"] == 1).sum()
+    fullsum[4] += (df["wa"] == 1).sum()
+    fullsum[5] += (df["wd"] == 1).sum()
+    fullsum[6] += (df["sa"] == 1).sum()
+    fullsum[7] += (df["sd"] == 1).sum()
+    fullsum[8] += (df["nk"] == 1).sum()
 
 print(fullsum)
 
-fullsum.reshape(5, 1)
-df2 = pd.DataFrame([fullsum], columns=["w", "s", "a", "d", "n"])
+fullsum.reshape(9, 1)
+df2 = pd.DataFrame([fullsum], columns=["w", "s", "a", "d", "wa", "wd", "sa", "sd", "n"])
 
 print(df2)

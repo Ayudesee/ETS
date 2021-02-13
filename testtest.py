@@ -3,10 +3,15 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 
 
-file_name = 'D:/Ayudesee/Other/Data/ets-data-shuffled/training_data-1.npy'
+file_name = 'D:/Ayudesee/Other/Data/ets-data-raw-rgb/training_data-1.npy'
 train_data = np.load(file_name, allow_pickle=True)
 
-X, Y, x_test, y_test = train_test_split(train_data[0], train_data[1], test_size=0.1)
+images = []
+keys = []
 
-print(Y)
-# print(Y)
+for data in train_data:
+    images.append(data[0])
+    keys.append(data[1])
+
+X, x_test, Y, y_test = train_test_split(images, keys, test_size=0.1)
+print(len(Y), len(y_test))

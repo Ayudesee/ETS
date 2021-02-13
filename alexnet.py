@@ -51,11 +51,11 @@ def alexnet_model_modified(img_shape=(224, 224, 3), n_classes=10, l2_reg=0., wei
     # alexnet.add(Activation('relu'))
     #
     # # Layer 5
-    # alexnet.add(ZeroPadding2D((1, 1)))
-    # alexnet.add(Conv2D(1024, (3, 3), padding='same'))
-    # alexnet.add(BatchNormalization())
-    # alexnet.add(Activation('relu'))
-    # alexnet.add(MaxPooling2D(pool_size=(2, 2)))
+    alexnet.add(ZeroPadding2D((1, 1)))
+    alexnet.add(Conv2D(64, (3, 3), padding='same'))
+    alexnet.add(BatchNormalization())
+    alexnet.add(Activation('relu'))
+    alexnet.add(MaxPooling2D(pool_size=(2, 2)))
 
     # Layer 6
     alexnet.add(Flatten())
@@ -107,7 +107,7 @@ if __name__ == "__main__":
     args = parse_args()
 
     # Create AlexNet model
-    model = alexnet_model()
+    model = alexnet_model_modified()
 
     # Print
     if args.print_model:

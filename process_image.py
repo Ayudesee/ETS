@@ -1,12 +1,12 @@
 import cv2
 import numpy as np
-from test import proc_screen, find_traffic_light, transform2
+from test import proc_screen, find_traffic_light, transform2, sobel
 
 
 def process_images(original_images):
     processed_images = []
     for original_image in original_images:
-        processed_images.append(process_image_v3(original_image))
+        processed_images.append(process_image_v4(original_image))
 
     processed_images = np.array(processed_images)
     return processed_images
@@ -124,6 +124,12 @@ def process_image_v3(original_image):
     return processed_image
 
 
+def process_image_v4(original_image):
+    processed_image1 = sobel(original_image)
+    processed_image2 = find_traffic_light(original_image)
+    processed_image = cv2.add(processed_image1, processed_image2)
+
+    return processed_image
 # file = np.load(f"D:/Ayudesee/Other/Data/ets-data-raw-rgb/training_data-1.npy", allow_pickle=True)
 # screen = process_image_v3(file[0][0])
 # cv2.imshow('screen', screen)

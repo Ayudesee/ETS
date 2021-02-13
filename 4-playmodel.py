@@ -2,7 +2,7 @@ import tensorflow as tf
 import time
 import os
 from random import random
-from process_image import process_image_v3
+from process_image import process_image_v4
 from imagegrab import grab_screen_rgb
 import numpy as np
 import cv2
@@ -14,14 +14,14 @@ vertices = np.array([[0, 8], [51, 8], [54, 0], [91, 0], [95, 11], [151, 11], [15
 os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 WIDTH = 300
 HEIGHT = 200
-LR = 1e-3
+LR = 1e-2
 EPOCHS = 10
 
 # MODEL_NAME = 'model1'
 
 
 def main():
-    filepath = 'models/model_proc_img_v3.h5'
+    filepath = 'models/model_proc_img_v4_5_0.01.h5'
     paused = False
 
     model = tf.keras.models.load_model(filepath=filepath)
@@ -34,12 +34,12 @@ def main():
         if not paused:
             screen = grab_screen_rgb(640, 34, 1920, 834)
             screen = cv2.resize(screen, (WIDTH, HEIGHT))
-            screen = process_image_v3(screen)
+            screen = process_image_v4(screen)
             cv2.imshow('window', screen)
             cv2.waitKey(1)
 
             screen = np.reshape(screen, (-1, HEIGHT, WIDTH, 3))
-            prediction = model.predict(screen) * np.array([1, 0.8, 0.26, 0.26, 1])
+            prediction = model.predict(screen) * np.array([0.7, 0.9, 0.25, 0.25, 0.27, 0.27, 2, 2, 0.4])
 
             mode_choice = np.argmax(prediction)
 
@@ -52,21 +52,34 @@ def main():
             elif mode_choice == 2:
                 left()
                 choice_picked = 'left'
-                time.sleep(0.095)
-                ReleaseKey(A)
+                # time.sleep(0.095)
+                # ReleaseKey(A)
             elif mode_choice == 3:
                 right()
                 choice_picked = 'right'
-                time.sleep(0.095)
-                ReleaseKey(D)
+                # time.sleep(0.095)
+                # ReleaseKey(D)
             elif mode_choice == 4:
-                if random() > 0.3:
-                    straight()
-                    choice_picked = 'no_keys(straight)'
-                else:
-                    no_keys()
-                    choice_picked = 'no_keys'
-
+                forward_left()
+                choice_picked = 'forward+left'
+                time.sleep(0.07)
+                ReleaseKey(A)
+                ReleaseKey(W)
+            elif mode_choice == 5:
+                forward_right()
+                choice_picked = 'forward+right'
+                time.sleep(0.07)
+                ReleaseKey(D)
+                ReleaseKey(W)
+            elif mode_choice == 6:
+                reverse_left()
+                choice_picked = 'reverse+left'
+            elif mode_choice == 7:
+                reverse_right()
+                choice_picked = 'reverse+right'
+            else:
+                no_keys()
+                choice_picked = 'no_keys'
 
             np.set_printoptions(formatter={'float': '{: 0.2f}'.format})
             print(prediction, choice_picked)
