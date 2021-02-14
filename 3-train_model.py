@@ -45,10 +45,10 @@ while True:
 
 WIDTH = 300
 HEIGHT = 200
-LR = 1e-2
+LR = 1e-3
 EPOCHS = 5
 
-MODEL_NAME = 'model_proc_img_v4_{}_{}'.format(EPOCHS, LR)
+MODEL_NAME = 'model_proc_img_v5_{}_{}'.format(EPOCHS, LR)
 PREV_MODEL = ''
 logdir = f"logs/{MODEL_NAME}"
 tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=logdir)
@@ -87,7 +87,7 @@ for e in range(EPOCHS):
             X = process_images(X)
             test_x = process_images(test_x)
 
-            model.fit(X, Y, epochs=1, batch_size=10, verbose=0)#, validation_data=(test_x, test_y), verbose=0)# , callbacks=tensorboard_callback)
+            model.fit(X, Y, epochs=1, batch_size=10, verbose=0, callbacks=tensorboard_callback)#, validation_data=(test_x, test_y), verbose=0)# , callbacks=tensorboard_callback)
 
             if count % 30 == 0 or count == FILE_I_END:
                 print('SAVING MODEL!')

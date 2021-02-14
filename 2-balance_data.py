@@ -3,7 +3,7 @@ import os
 from random import shuffle
 
 
-FILE_START = 1
+FILE_START = 962
 FILE_I_END = 1
 
 w = [1, 0, 0, 0, 0, 0, 0, 0, 0]

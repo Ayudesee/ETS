@@ -244,7 +244,6 @@ def find_edges_with_sobel():
         if cv2.waitKey(1) == 27:
             break
 
-    # processed_image = original_image
     return processed_image_blur
 
 
@@ -262,15 +261,10 @@ def sobel(original_image):
 
 
 def lap(original_image):
-    ddepth = cv2.CV_8U
     gray = cv2.cvtColor(original_image, cv2.COLOR_RGB2GRAY)
-    # gray = cv2.medianBlur(gray, 3, 0)
-    mask = np.full_like(gray, fill_value=255)
-    masked = cv2.fillPoly(gray, np.array([[[0, 200], [70, 200], [90, 120], [210, 120], [230, 200], [300, 200], [300, 0], [0, 0]]]), 0)
-    masked = cv2.bitwise_and(gray, masked)
-    cv2.imshow('masked', masked)
+    cv2.fillPoly(gray, np.array([[[0, 200], [70, 200], [90, 120], [210, 120], [230, 200], [300, 200], [300, 0], [0, 0]]]), 0)
 
-    processed_image = cv2.Laplacian(gray, ddepth=ddepth, ksize=3)
+    processed_image = cv2.Laplacian(gray, ddepth=cv2.CV_8U, ksize=3)
     processed_image = cv2.cvtColor(processed_image, cv2.COLOR_GRAY2RGB)
     return processed_image
 

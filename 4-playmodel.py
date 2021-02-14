@@ -2,7 +2,7 @@ import tensorflow as tf
 import time
 import os
 from random import random
-from process_image import process_image_v4
+from process_image import process_image_v5
 from imagegrab import grab_screen_rgb
 import numpy as np
 import cv2
@@ -34,7 +34,7 @@ def main():
         if not paused:
             screen = grab_screen_rgb(640, 34, 1920, 834)
             screen = cv2.resize(screen, (WIDTH, HEIGHT))
-            screen = process_image_v4(screen)
+            screen = process_image_v5(screen)
             cv2.imshow('window', screen)
             cv2.waitKey(1)
 
