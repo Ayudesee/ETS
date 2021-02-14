@@ -13,7 +13,6 @@ def main_func(start_file_number):
         file_name = f'D:/Ayudesee/Other/Data/ets-data-raw-rgb/training_data-{FILE_I_END}.npy'
 
         if os.path.isfile(file_name):
-            print(FILE_I_END)
             FILE_I_END += 1
         else:
             FILE_I_END -= 1
@@ -35,7 +34,8 @@ def main_func(start_file_number):
 
             # processed_image1 = transform2(screen[n][0])
             # processed_image1 = proc_screen(screen[n][0])
-            processed_image1 = sobel(screen[n][0])
+            # processed_image1 = sobel(screen[n][0])
+            processed_image1 = lap(screen[n][0])
             processed_image2 = find_traffic_light(screen[n][0])
             processed_image = cv2.add(processed_image1, processed_image2)
 
@@ -213,30 +213,39 @@ def find_color_with_taskbars():  # 116, 86, 63 - 168, 255, 255
 
 
 def find_edges_with_sobel():
-    file = np.load(f"D:/Ayudesee/Other/Data/ets-data-raw-rgb/training_data-58.npy", allow_pickle=True)
-    original_image = file[184][0]
+    file = np.load(f"D:/Ayudesee/Other/Data/ets-data-raw-rgb/training_data-108.npy", allow_pickle=True)
+    original_image = file[200][0]
     cv2.namedWindow('Trackbars')
     gray = cv2.cvtColor(original_image, cv2.COLOR_RGB2GRAY)
+
     cv2.createTrackbar("dx", "Trackbars", 1, 9, nothing)
     cv2.createTrackbar("dy", "Trackbars", 1, 9, nothing)
     cv2.createTrackbar("ksize", "Trackbars", 3, 17, nothing)
+    cv2.createTrackbar("kernel", "Trackbars", 3, 17, nothing)
 
     while True:
         dx = cv2.getTrackbarPos("dx", "Trackbars")
         dy = cv2.getTrackbarPos("dy", "Trackbars")
         ksize = cv2.getTrackbarPos("ksize", "Trackbars")
+        kernel = cv2.getTrackbarPos("kernel", "Trackbars")
         if ksize % 2 == 0:
             ksize += 1
-
-        processed_image = cv2.Sobel(gray, ddepth=cv2.CV_8U, dx=dx, dy=dy, ksize=ksize)
+        if kernel % 2 == 0:
+            kernel += 1
+        gray_median_blur = cv2.medianBlur(gray, kernel, 0)
+        processed_image_sobel = cv2.Sobel(gray, ddepth=cv2.CV_8U, dx=dx, dy=dy, ksize=ksize)
+        processed_image_lap = cv2.Laplacian(gray, ddepth=cv2.CV_8U, ksize=ksize)
+        processed_image_blur = cv2.Laplacian(gray_median_blur, ddepth=cv2.CV_8U, ksize=ksize)
 
         cv2.imshow('raw', original_image)
-        cv2.imshow('processed_image', processed_image)
+        cv2.imshow('proc_sobel', processed_image_sobel)
+        cv2.imshow('proc_blur_lap', processed_image_blur)
+        cv2.imshow('proc_lap', processed_image_lap)
         if cv2.waitKey(1) == 27:
             break
 
     # processed_image = original_image
-    return processed_image
+    return processed_image_blur
 
 
 def nothing(x):
@@ -252,7 +261,21 @@ def sobel(original_image):
     return processed_image
 
 
-# main(start_file_number=320)
+def lap(original_image):
+    ddepth = cv2.CV_8U
+    gray = cv2.cvtColor(original_image, cv2.COLOR_RGB2GRAY)
+    # gray = cv2.medianBlur(gray, 3, 0)
+    mask = np.full_like(gray, fill_value=255)
+    masked = cv2.fillPoly(gray, np.array([[[0, 200], [70, 200], [90, 120], [210, 120], [230, 200], [300, 200], [300, 0], [0, 0]]]), 0)
+    masked = cv2.bitwise_and(gray, masked)
+    cv2.imshow('masked', masked)
+
+    processed_image = cv2.Laplacian(gray, ddepth=ddepth, ksize=3)
+    processed_image = cv2.cvtColor(processed_image, cv2.COLOR_GRAY2RGB)
+    return processed_image
+
+
+# main_func(start_file_number=420)
 
 # find_color_with_taskbars()
 # find_edges_with_sobel()
