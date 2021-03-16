@@ -31,13 +31,13 @@ def main_func(start_file_number):
             # cv2.line(screen[n][0], (155, 110), (195, 190), (255, 255, 0), 1)
 
             # processed_image1 = transform2(screen[n][0])
-            # processed_image1 = proc_screen(screen[n][0])
+            processed_image1 = proc_screen(screen[n][0])
             # processed_image1 = sobel(screen[n][0])
             # processed_image1 = lap(screen[n][0])
-            # processed_image2 = find_traffic_light(screen[n][0])
-            # processed_image = cv2.add(processed_image1, processed_image2)
+            processed_image2 = find_traffic_light(screen[n][0])
+            processed_image = cv2.add(processed_image1, processed_image2)
 
-            processed_image = numbers_finding(screen[n][0])
+            # processed_image = numbers_finding(screen[n][0])
 
             cv2.imshow('raw', screen[n][0])
             cv2.imshow('processed', processed_image)
