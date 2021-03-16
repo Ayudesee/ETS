@@ -6,7 +6,7 @@ from test import proc_screen, find_traffic_light, transform2, sobel, lap
 def process_images(original_images):
     processed_images = []
     for original_image in original_images:
-        processed_images.append(process_image_v5(original_image))
+        processed_images.append(process_image_v2(original_image))
 
     processed_images = np.array(processed_images)
     return processed_images
@@ -141,6 +141,6 @@ def process_image_v5(original_image):
 
 
 # file = np.load(f"D:/Ayudesee/Other/Data/ets-data-raw-rgb/training_data-1.npy", allow_pickle=True)
-# screen = process_image_v3(file[0][0])
+# screen = process_image_v2(file[0][0])
 # cv2.imshow('screen', screen)
 # cv2.waitKey(0)

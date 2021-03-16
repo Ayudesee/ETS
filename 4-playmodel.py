@@ -2,7 +2,7 @@ import tensorflow as tf
 import time
 import os
 from random import random
-from process_image import process_image_v5
+from process_image import process_image_v2
 from imagegrab import grab_screen_rgb
 import numpy as np
 import cv2
@@ -21,7 +21,7 @@ EPOCHS = 10
 
 
 def main():
-    filepath = 'models/model_proc_img_v4_5_0.01.h5'
+    filepath = 'models/15-03-procv2-hsv.h5'
     paused = False
 
     model = tf.keras.models.load_model(filepath=filepath)
@@ -34,12 +34,12 @@ def main():
         if not paused:
             screen = grab_screen_rgb(640, 34, 1920, 834)
             screen = cv2.resize(screen, (WIDTH, HEIGHT))
-            screen = process_image_v5(screen)
+            screen = process_image_v2(screen)
             cv2.imshow('window', screen)
             cv2.waitKey(1)
 
             screen = np.reshape(screen, (-1, HEIGHT, WIDTH, 3))
-            prediction = model.predict(screen) * np.array([0.7, 0.9, 0.25, 0.25, 0.27, 0.27, 2, 2, 0.4])
+            prediction = model.predict(screen) * np.array([0.8, 0.5, 0.6, 0.6, 0.55, 0.55, 1, 1, 1.2])
 
             mode_choice = np.argmax(prediction)
 
@@ -62,13 +62,13 @@ def main():
             elif mode_choice == 4:
                 forward_left()
                 choice_picked = 'forward+left'
-                time.sleep(0.07)
+                time.sleep(0.05)
                 ReleaseKey(A)
                 ReleaseKey(W)
             elif mode_choice == 5:
                 forward_right()
                 choice_picked = 'forward+right'
-                time.sleep(0.07)
+                time.sleep(0.05)
                 ReleaseKey(D)
                 ReleaseKey(W)
             elif mode_choice == 6:

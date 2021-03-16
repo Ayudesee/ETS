@@ -3,9 +3,7 @@ import numpy as np
 import os
 
 
-
-# 49, 54город,983 - светофор,  700 - туман, 300 - ночь+объезд, 406 - солнце, ничего не видно
-
+# 49, 54город, 62-повороты+светофоры, 700 - туман, 300 - ночь+объезд, 406 - солнце, ничего не видно
 
 def main_func(start_file_number):
     FILE_I_END = 1
@@ -35,11 +33,11 @@ def main_func(start_file_number):
             # processed_image1 = transform2(screen[n][0])
             # processed_image1 = proc_screen(screen[n][0])
             # processed_image1 = sobel(screen[n][0])
-            processed_image1 = lap(screen[n][0])
-            processed_image2 = find_traffic_light(screen[n][0])
-            processed_image = cv2.add(processed_image1, processed_image2)
+            # processed_image1 = lap(screen[n][0])
+            # processed_image2 = find_traffic_light(screen[n][0])
+            # processed_image = cv2.add(processed_image1, processed_image2)
 
-
+            processed_image = numbers_finding(screen[n][0])
 
             cv2.imshow('raw', screen[n][0])
             cv2.imshow('processed', processed_image)
@@ -51,6 +49,8 @@ def main_func(start_file_number):
 
 
 def proc_screen(original_image):
+    hsv_image = cv2.cvtColor(original_image, cv2.COLOR_RGB2HSV)
+    cv2.fillPoly(hsv_image, np.array([[[0, 100], [300, 100], [300, 0], [0, 0]]]), 0)
     vertices_road = np.array([[90, 200], [130, 150], [170, 150], [210, 200]])
     left_coordinate = []
     right_coordinate = []
@@ -86,10 +86,13 @@ def proc_screen(original_image):
                 right_coordinate.append([x1, y1, x2, y2])
                 cv2.line(line_image, (x1, y1), (x2, y2), (0, 0, 255), 2)
 
-    # M = cv2.getPerspectiveTransform(pts2, pts1)
-    # line_image = cv2.warpPerspective(line_image, M, (300, 200))
-    canny = cv2.cvtColor(canny, cv2.COLOR_GRAY2RGB)
-    processed_image = cv2.add(canny, line_image)
+    M = cv2.getPerspectiveTransform(pts2, pts1)
+    line_image = cv2.warpPerspective(line_image, M, (300, 200))
+    # canny = cv2.cvtColor(canny, cv2.COLOR_GRAY2RGB)
+    # canny = cv2.warpPerspective(canny, M, (300, 200))
+    processed_image = cv2.addWeighted(hsv_image, 0.3, line_image, 0.7, 1)
+    # processed_image = line_image
+    cv2.fillPoly(processed_image, np.array([[[225, 130], [290, 130], [290, 180], [225, 180]]]), 0)
     return processed_image
 
 
@@ -262,15 +265,15 @@ def sobel(original_image):
 
 def lap(original_image):
     gray = cv2.cvtColor(original_image, cv2.COLOR_RGB2GRAY)
-    cv2.fillPoly(gray, np.array([[[0, 200], [70, 200], [90, 120], [210, 120], [230, 200], [300, 200], [300, 0], [0, 0]]]), 0)
+    cv2.fillPoly(gray,
+                 np.array([[[0, 200], [70, 200], [90, 120], [210, 120], [230, 200], [300, 200], [300, 0], [0, 0]]]), 0)
 
     processed_image = cv2.Laplacian(gray, ddepth=cv2.CV_8U, ksize=3)
     processed_image = cv2.cvtColor(processed_image, cv2.COLOR_GRAY2RGB)
     return processed_image
 
 
-# main_func(start_file_number=420)
+# main_func(start_file_number=66)
 
 # find_color_with_taskbars()
 # find_edges_with_sobel()
-

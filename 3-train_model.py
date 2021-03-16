@@ -48,10 +48,10 @@ HEIGHT = 200
 LR = 1e-3
 EPOCHS = 5
 
-MODEL_NAME = 'model_proc_img_v5_{}_{}'.format(EPOCHS, LR)
+MODEL_NAME = '15-03-procv2-hsv'.format(EPOCHS, LR)
 PREV_MODEL = ''
-logdir = f"logs/{MODEL_NAME}"
-tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=logdir)
+logdir = f".\\logs\\{MODEL_NAME}"
+tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=logdir, profile_batch=5)
 
 LOAD_MODEL = False
 
@@ -82,14 +82,16 @@ for e in range(EPOCHS):
             X = np.array(X).reshape(-1, HEIGHT, WIDTH, 3)
             Y = np.array(Y)
             test_x = np.array(test_x).reshape(-1, HEIGHT, WIDTH, 3)
-            test_y = np.array(test_y)
+            # test_y = np.array(test_y)
 
             X = process_images(X)
-            test_x = process_images(test_x)
+            # test_x = process_images(test_x)
 
-            model.fit(X, Y, epochs=1, batch_size=10, verbose=0, callbacks=tensorboard_callback)#, validation_data=(test_x, test_y), verbose=0)# , callbacks=tensorboard_callback)
+            model.fit(X, Y, epochs=1, batch_size=10, verbose=0)#, validation_data=(test_x, test_y), validation_freq=10, use_multiprocessing=True)# , callbacks=[tensorboard_callback])#, validation_data=(test_x, test_y), verbose=0)# , callbacks=tensorboard_callback)
+            # model.train_on_batch(X, Y)
+            # model.fit_generator((X, Y), steps_per_epoch= FILE_I_END-1)
 
-            if count % 30 == 0 or count == FILE_I_END:
+            if count % 30 == 0 or count == FILE_I_END-1:
                 print('SAVING MODEL!')
                 model.save(f"models/{MODEL_NAME}.h5")
 
