@@ -140,14 +140,15 @@ def process_image_v5(original_image):
     return processed_image
 
 
-def process_iamge_lap(original_image):
+def process_image_lap(original_image):
     processed_image1 = lap(original_image)
     processed_image2 = find_traffic_light(original_image)
     processed_image = cv2.add(processed_image1, processed_image2)
     return processed_image
 
 
-def process_image(original_image):  # all changes do here
+def process_image_2range(original_image):  # all changes do here
+    original_image = cv2.normalize(original_image, None, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
     processed_image1 = find_lines_inrange(original_image, 0, 0, 77, 255, 87, 255)
     processed_image2 = find_traffic_light(original_image)
     processed_image3 = find_lines_inrange(original_image, 98, 90, 123, 176, 255, 255)
@@ -156,6 +157,19 @@ def process_image(original_image):  # all changes do here
 
     return processed_image
 
+def process_image(original_image):
+
+    processed_image1 = lap(original_image)
+    processed_image2 = find_traffic_light(original_image)
+    processed_image = cv2.add(processed_image1, processed_image2)
+    processed_image = cv2.normalize(processed_image, None, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
+
+    return processed_image
+
+# def process_image(original_image):  # all changes do here
+#     processed_image = cv2.normalize(original_image, None, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
+#
+#     return processed_image
 # file = np.load(f"D:/Ayudesee/Other/Data/ets-data-raw-rgb/training_data-1.npy", allow_pickle=True)
 # screen = process_image(file[0][0])
 # cv2.imshow('screen', screen)

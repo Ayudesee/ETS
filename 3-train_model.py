@@ -51,7 +51,7 @@ HEIGHT = 200
 LR = 1e-3
 EPOCHS = 20
 
-MODEL_NAME = '07-06-2ranges-v1-4'  # .format(EPOCHS, LR)
+MODEL_NAME = '07-06-test-2'  # .format(EPOCHS, LR)
 PREV_MODEL = ''
 logdir = f".\\logs\\{MODEL_NAME}"
 tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=logdir, profile_batch=5)
@@ -90,7 +90,7 @@ for e in range(EPOCHS):
             X = process_images(X)
             test_x = process_images(test_x)
 
-            history = model.fit(X, Y, epochs=1, batch_size=10, verbose=1, validation_data=(test_x, test_y), initial_epoch=e, callbacks=tensorboard_callback)  # , validation_freq=10, use_multiprocessing=True, callbacks=[tensorboard_callback])
+            history = model.fit(X, Y, epochs=1, batch_size=10, verbose=1, validation_data=(test_x, test_y), callbacks=tensorboard_callback)  # , validation_freq=10, use_multiprocessing=True, callbacks=[tensorboard_callback])
             # model.train_on_batch(X, Y)
             # model.fit_generator((X, Y), steps_per_epoch= FILE_I_END-1)
 

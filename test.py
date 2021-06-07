@@ -33,6 +33,7 @@ def main_func(start_file_number):
             # processed_image1 = transform2(screen[n][0])
             # processed_image1 = proc_screen(screen[n][0])
             # processed_image1 = sobel(screen[n][0])
+
             processed_image1 = lap(screen[n][0])
             # processed_image1 = find_lines_inrange(screen[n][0], 0, 0, 77, 255, 87, 255)
             processed_image2 = find_traffic_light(screen[n][0])

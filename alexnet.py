@@ -1,65 +1,26 @@
-"""
-AlexNet Keras Implementation
-BibTeX Citation:
-@inproceedings{krizhevsky2012imagenet,
-  title={Imagenet classification with deep convolutional neural networks},
-  author={Krizhevsky, Alex and Sutskever, Ilya and Hinton, Geoffrey E},
-  booktitle={Advances in neural information processing systems},
-  pages={1097--1105},
-  year={2012}
-}
-"""
-
-# Import necessary packages
 import argparse
-
-# Import necessary components to build LeNet
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, Activation, Flatten, Conv2D, MaxPooling2D, BatchNormalization
+from tensorflow.keras.activations import elu
 
 
 def alexnet_model_modified(img_shape=(200, 300, 3), n_classes=9, weights=None):
     alexnet = Sequential()
 
-    # Layer 1
-    alexnet.add(Conv2D(64, (15, 15), input_shape=img_shape, padding='same'))
-    alexnet.add(BatchNormalization())
-    alexnet.add(Activation('relu'))
-    alexnet.add(MaxPooling2D(pool_size=(2, 2)))
-
-    # Layer 2
-    alexnet.add(Conv2D(96, (7, 7), padding='same'))
-    alexnet.add(BatchNormalization())
-    alexnet.add(Activation('relu'))
-    alexnet.add(MaxPooling2D(pool_size=(2, 2)))
-
-    # Layer 3
+    alexnet.add(Conv2D(64, (7, 7), input_shape=img_shape, padding='same'))
+    alexnet.add(MaxPooling2D(pool_size=(3, 3), strides=(2, 2), padding='same'))
+    alexnet.add(Activation('elu'))
     alexnet.add(Conv2D(128, (5, 5), padding='same'))
-    alexnet.add(BatchNormalization())
-    alexnet.add(Activation('relu'))
-    alexnet.add(MaxPooling2D(pool_size=(2, 2)))
-    #
-    # # Layer 4
-    # alexnet.add(Conv2D(256, (3, 3), padding='same'))
-    # alexnet.add(BatchNormalization())
-    # alexnet.add(Activation('relu'))
-
-    # Layer 6
+    alexnet.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding='same'))
+    alexnet.add(Activation('elu'))
+    alexnet.add(Conv2D(256, (3, 3), padding='same'))
+    alexnet.add(MaxPooling2D(pool_size=(2, 2), padding='same'))
+    alexnet.add(Activation('elu'))
     alexnet.add(Flatten())
-    alexnet.add(Dense(512))
-    alexnet.add(BatchNormalization())
-    alexnet.add(Activation('relu'))
-    alexnet.add(Dropout(0.5))
-
-    # Layer 7
-    alexnet.add(Dense(256))
-    alexnet.add(BatchNormalization())
-    alexnet.add(Activation('relu'))
+    alexnet.add(Dense(64))
+    alexnet.add(Activation('elu'))
     alexnet.add(Dropout(0.3))
-
-    # Layer 8
     alexnet.add(Dense(n_classes))
-    alexnet.add(BatchNormalization())
     alexnet.add(Activation('softmax'))
 
     if weights is not None:
