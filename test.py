@@ -31,13 +31,15 @@ def main_func(start_file_number):
             # cv2.line(screen[n][0], (155, 110), (195, 190), (255, 255, 0), 1)
 
             # processed_image1 = transform2(screen[n][0])
-            processed_image1 = proc_screen(screen[n][0])
+            # processed_image1 = proc_screen(screen[n][0])
             # processed_image1 = sobel(screen[n][0])
-            # processed_image1 = lap(screen[n][0])
+            processed_image1 = lap(screen[n][0])
+            # processed_image1 = find_lines_inrange(screen[n][0], 0, 0, 77, 255, 87, 255)
             processed_image2 = find_traffic_light(screen[n][0])
+            # processed_image3 = find_lines_inrange(screen[n][0], 98, 90, 123, 176, 255, 255)
             processed_image = cv2.add(processed_image1, processed_image2)
-
-            # processed_image = numbers_finding(screen[n][0])
+            # processed_image = cv2.add(processed_image, processed_image3)
+            # processed_image = find_lines_inrange(screen[n][0])
 
             cv2.imshow('raw', screen[n][0])
             cv2.imshow('processed', processed_image)
@@ -50,6 +52,7 @@ def main_func(start_file_number):
 
 def proc_screen(original_image):
     hsv_image = cv2.cvtColor(original_image, cv2.COLOR_RGB2HSV)
+    cv2.imshow('hsv', hsv_image)
     cv2.fillPoly(hsv_image, np.array([[[0, 100], [300, 100], [300, 0], [0, 0]]]), 0)
     vertices_road = np.array([[90, 200], [130, 150], [170, 150], [210, 200]])
     left_coordinate = []
@@ -61,7 +64,7 @@ def proc_screen(original_image):
     gray = cv2.cvtColor(original_image, cv2.COLOR_RGB2GRAY)
 
     pts1 = np.float32([[130, 120], [170, 120], [90, 200], [210, 200]])  # road
-    pts2 = np.float32([[90, 20], [210, 20], [20, 200], [280, 200]])
+    pts2 = np.float32([[90, 20], [210, 20], [90, 200], [210, 200]])
     M = cv2.getPerspectiveTransform(pts1, pts2)
     warped = cv2.warpPerspective(gray, M, (300, 200))
 
@@ -70,7 +73,8 @@ def proc_screen(original_image):
 
     canny = cv2.Canny(image=warped, threshold1=80, threshold2=150, apertureSize=3)  # 80 150 good
     canny = cv2.GaussianBlur(canny, (3, 3), 0)
-    lines = cv2.HoughLinesP(image=canny, rho=cv2.HOUGH_PROBABILISTIC, theta=np.pi / 180, threshold=20,
+    cv2.imshow('canny', canny)
+    lines = cv2.HoughLinesP(image=canny, rho=cv2.HOUGH_PROBABILISTIC, theta=np.pi / 180, threshold=22,
                             minLineLength=minLineLength, maxLineGap=maxLineGap)
     if lines is not None:
         for line in lines:
@@ -81,16 +85,16 @@ def proc_screen(original_image):
             angle = np.rad2deg(np.arctan(slope))
             if abs(angle) <= 65 and slope < 0:
                 left_coordinate.append([x1, y1, x2, y2])
-                cv2.line(line_image, (x1, y1), (x2, y2), (255, 0, 0), 2)
+                cv2.line(line_image, (x1, y1), (x2, y2), (255, 255, 0), 2)
             elif abs(angle) <= 65 and slope > 0:
                 right_coordinate.append([x1, y1, x2, y2])
-                cv2.line(line_image, (x1, y1), (x2, y2), (0, 0, 255), 2)
+                cv2.line(line_image, (x1, y1), (x2, y2), (0, 255, 255), 2)
 
     M = cv2.getPerspectiveTransform(pts2, pts1)
     line_image = cv2.warpPerspective(line_image, M, (300, 200))
-    # canny = cv2.cvtColor(canny, cv2.COLOR_GRAY2RGB)
-    # canny = cv2.warpPerspective(canny, M, (300, 200))
-    processed_image = cv2.addWeighted(hsv_image, 0.3, line_image, 0.7, 1)
+    canny = cv2.cvtColor(canny, cv2.COLOR_GRAY2RGB)
+    canny = cv2.warpPerspective(canny, M, (300, 200))
+    processed_image = cv2.addWeighted(canny, 0.4, line_image, 0.6, 1)
     # processed_image = line_image
     cv2.fillPoly(processed_image, np.array([[[225, 130], [290, 130], [290, 180], [225, 180]]]), 0)
     return processed_image
@@ -179,16 +183,28 @@ def find_traffic_light(original_image):
     return processed_image
 
 
+def find_lines_inrange(original_image, hue_lower, sat_lower, value_lower, hue_upper, sat_upper, value_upper): #35, 34, 96, 102, 48, 169 - white color(file 75); 0, 0, 113, 101, 25, 185(file 461)
+    #middle - 0, 0, 96, 101, 101, 185;   29, 0, 56, 107, 32, 255 for 321(night)
+    # 90 0 77 114 87 255
+    hsv = cv2.cvtColor(original_image, cv2.COLOR_RGB2HSV)
+    lower = np.array([hue_lower, sat_lower, value_lower])
+    upper = np.array([hue_upper, sat_upper, value_upper])
+    mask = cv2.inRange(hsv, lower, upper)
+
+    screen = cv2.bitwise_and(original_image, original_image, mask=mask)
+    return screen
+
+
 def find_color_with_taskbars():  # 116, 86, 63 - 168, 255, 255
-    file = np.load(f"D:/Ayudesee/Other/Data/ets-data-raw-rgb/training_data-58.npy", allow_pickle=True)
-    original_image = file[184][0]
+    file = np.load(f"D:/Ayudesee/Other/Data/ets-data-raw-rgb/training_data-507.npy", allow_pickle=True)
+    original_image = file[0][0]
     cv2.namedWindow('Trackbars')
     hsv = cv2.cvtColor(original_image, cv2.COLOR_RGB2HSV)
-    cv2.createTrackbar("L - H", "Trackbars", 116, 180, nothing)
-    cv2.createTrackbar("L - S", "Trackbars", 86, 255, nothing)
-    cv2.createTrackbar("L - V", "Trackbars", 63, 255, nothing)
-    cv2.createTrackbar("U - H", "Trackbars", 168, 180, nothing)
-    cv2.createTrackbar("U - S", "Trackbars", 255, 255, nothing)
+    cv2.createTrackbar("L - H", "Trackbars", 0, 180, nothing)
+    cv2.createTrackbar("L - S", "Trackbars", 0, 255, nothing)
+    cv2.createTrackbar("L - V", "Trackbars", 77, 255, nothing)
+    cv2.createTrackbar("U - H", "Trackbars", 255, 180, nothing)
+    cv2.createTrackbar("U - S", "Trackbars", 87, 255, nothing)
     cv2.createTrackbar("U - V", "Trackbars", 255, 255, nothing)
 
     while True:
@@ -216,15 +232,15 @@ def find_color_with_taskbars():  # 116, 86, 63 - 168, 255, 255
 
 
 def find_edges_with_sobel():
-    file = np.load(f"D:/Ayudesee/Other/Data/ets-data-raw-rgb/training_data-108.npy", allow_pickle=True)
-    original_image = file[200][0]
+    file = np.load(f"D:/Ayudesee/Other/Data/ets-data-raw-rgb/training_data-569.npy", allow_pickle=True)
+    original_image = file[0][0]
     cv2.namedWindow('Trackbars')
     gray = cv2.cvtColor(original_image, cv2.COLOR_RGB2GRAY)
 
     cv2.createTrackbar("dx", "Trackbars", 1, 9, nothing)
     cv2.createTrackbar("dy", "Trackbars", 1, 9, nothing)
     cv2.createTrackbar("ksize", "Trackbars", 3, 17, nothing)
-    cv2.createTrackbar("kernel", "Trackbars", 3, 17, nothing)
+    cv2.createTrackbar("kernel", "Trackbars", 1, 17, nothing)
 
     while True:
         dx = cv2.getTrackbarPos("dx", "Trackbars")
@@ -265,15 +281,15 @@ def sobel(original_image):
 
 def lap(original_image):
     gray = cv2.cvtColor(original_image, cv2.COLOR_RGB2GRAY)
-    cv2.fillPoly(gray,
-                 np.array([[[0, 200], [70, 200], [90, 120], [210, 120], [230, 200], [300, 200], [300, 0], [0, 0]]]), 0)
+    # cv2.fillPoly(gray,
+                 # np.array([[[0, 200], [70, 200], [90, 120], [210, 120], [230, 200], [300, 200], [300, 0], [0, 0]]]), 0)
 
     processed_image = cv2.Laplacian(gray, ddepth=cv2.CV_8U, ksize=3)
     processed_image = cv2.cvtColor(processed_image, cv2.COLOR_GRAY2RGB)
     return processed_image
 
 
-# main_func(start_file_number=66)
+# main_func(start_file_number=507)
 
 # find_color_with_taskbars()
 # find_edges_with_sobel()

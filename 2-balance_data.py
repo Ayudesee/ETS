@@ -3,7 +3,7 @@ import os
 from random import shuffle
 
 
-FILE_START = 1058
+# FILE_START = 1
 FILE_I_END = 1
 
 w = [1, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -25,11 +25,13 @@ while True:
         print(f'files found: {FILE_I_END - 1}')
         break
 
-
-for _ in range(FILE_START, FILE_I_END):
-    cut_off_fwd = 9
-    cut_off_nk = 9
+final_data = []
+counter = 0
+for _ in range(1, FILE_I_END):
+    cut_off_fwd = 18
+    cut_off_nk = 14
     train_data = np.load(f'D:/Ayudesee/Other/Data/ets-data-raw-rgb/training_data-{_}.npy', allow_pickle=True)
+
     forwards = []
     nokeys = []
     other = []
@@ -45,13 +47,15 @@ for _ in range(FILE_START, FILE_I_END):
     shuffle(forwards)
     shuffle(nokeys)
 
-    # print(f'{_} - len(fwd)/{cut_off_fwd} = {int(len(forwards)/cut_off_fwd)}')
-
     forwards = forwards[0:int(len(forwards)/cut_off_fwd)]
     nokeys = nokeys[0:int(len(nokeys)/cut_off_nk)]
 
-    final_data = other + nokeys + forwards
+    final_data.extend(other)
+    final_data.extend(forwards)
+    final_data.extend(nokeys)
     shuffle(final_data)
-
-    print(f'{_} - total data length:{len(final_data)}, fwd:{int(100 * int(len(forwards))/len(final_data))}%, nk:{int(100 * int(len(nokeys))/len(final_data))}%')
-    np.save(f'D:/Ayudesee/Other/Data/ets-data-shuffled-9-9-cutoff/training_data-{_}.npy', final_data)
+    print(_)
+    if len(final_data) >= 500:
+        counter += 1
+        np.save(f'D:/Ayudesee/Other/Data/ets-data-shuffled-balanced/training_data-{counter}.npy', final_data[:500])
+        final_data = final_data[500:]

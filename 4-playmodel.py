@@ -2,7 +2,7 @@ import tensorflow as tf
 import time
 import os
 from random import random
-from process_image import process_image_v2
+from process_image import process_image
 from imagegrab import grab_screen_rgb
 import numpy as np
 import cv2
@@ -21,7 +21,7 @@ EPOCHS = 10
 
 
 def main():
-    filepath = 'models/15-03-procv2-hsv.h5'
+    filepath = 'models/22-05-2ranges-v1.h5'
     paused = False
 
     model = tf.keras.models.load_model(filepath=filepath)
@@ -33,42 +33,50 @@ def main():
         # print(time.time())
         if not paused:
             screen = grab_screen_rgb(640, 34, 1920, 834)
+            screen_speed = grab_screen_rgb(1594, 558, 1670, 576)
             screen = cv2.resize(screen, (WIDTH, HEIGHT))
-            screen = process_image_v2(screen)
+            screen[:18, :76, :] = screen_speed
+            screen = process_image(screen)
             cv2.imshow('window', screen)
             cv2.waitKey(1)
 
             screen = np.reshape(screen, (-1, HEIGHT, WIDTH, 3))
-            prediction = model.predict(screen) * np.array([0.8, 0.5, 0.6, 0.6, 0.55, 0.55, 1, 1, 1.2])
+            prediction = model.predict(screen) * np.array([1, 0.1, 0.8, 0.8, 0.8, 0.8, 1, 1, 1])
 
             mode_choice = np.argmax(prediction)
 
             if mode_choice == 0:
                 straight()
                 choice_picked = 'straight'
+                # if random() > 0.15:
+                #     straight()
+                #     choice_picked = 'straight'
+                # else:
+                #     no_keys()
+                #     choice_picked = 'straight(no keys)'
             elif mode_choice == 1:
                 reverse()
                 choice_picked = 'reverse'
             elif mode_choice == 2:
                 left()
                 choice_picked = 'left'
-                # time.sleep(0.095)
-                # ReleaseKey(A)
+                time.sleep(0.095)
+                ReleaseKey(A)
             elif mode_choice == 3:
                 right()
                 choice_picked = 'right'
-                # time.sleep(0.095)
-                # ReleaseKey(D)
+                time.sleep(0.095)
+                ReleaseKey(D)
             elif mode_choice == 4:
                 forward_left()
                 choice_picked = 'forward+left'
-                time.sleep(0.05)
+                time.sleep(0.07)
                 ReleaseKey(A)
                 ReleaseKey(W)
             elif mode_choice == 5:
                 forward_right()
                 choice_picked = 'forward+right'
-                time.sleep(0.05)
+                time.sleep(0.07)
                 ReleaseKey(D)
                 ReleaseKey(W)
             elif mode_choice == 6:

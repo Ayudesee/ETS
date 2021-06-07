@@ -13,7 +13,7 @@ while True:
         print('files found:', FILE_I_END - 1)
         break
 
-for _i in range(1, FILE_I_END):
+for _i in range(665, FILE_I_END):
     choices = []
     file = np.load(f'D:/Ayudesee/Other/Data/ets-data-raw-rgb/training_data-{_i}.npy', allow_pickle=True)
     print(f'processing... ({_i}/{FILE_I_END-1})')

@@ -5,7 +5,7 @@
       <excludeFolder url="file://$MODULE_DIR$/models" />
       <excludeFolder url="file://$MODULE_DIR$/logs" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.7 (tfgpu3)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.8 (tf-main)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>

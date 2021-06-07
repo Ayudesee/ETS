@@ -2,20 +2,20 @@ import pandas as pd
 import numpy as np
 import os
 
-FILE_I_END = 1
 
+FILE_I_END = 0
 while True:
-    file_name = 'D:/Ayudesee/Other/Data/ets-data-choices/choices-{}.csv'.format(FILE_I_END)
+    file_name = 'D:/Ayudesee/Other/Data/ets-data-choices/choices-{}.csv'.format(FILE_I_END + 1)
 
     if os.path.isfile(file_name):
         FILE_I_END += 1
     else:
-        print(f'files found: {FILE_I_END - 1}')
+        print(f'files found: {FILE_I_END}')
         break
 
 fullsum = np.full(9, 0)
 
-for _i in range(1, FILE_I_END):
+for _i in range(1, FILE_I_END + 1):
     df = pd.read_csv(f'D:/Ayudesee/Other/Data/ets-data-choices/choices-{_i}.csv')
     df.drop(columns="Unnamed: 0", inplace=True)
 

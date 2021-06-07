@@ -5,7 +5,10 @@ from sklearn.model_selection import train_test_split
 from process_image import process_images
 from alexnet import alexnet_model_modified
 from random import shuffle
+import matplotlib.pyplot as plt
 
+
+print(tf.config.get_visible_devices())
 # os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 # tf.config.threading.set_inter_op_parallelism_threads = 1
 # tf.config.threading.set_intra_op_parallelism_threads = 1
@@ -33,7 +36,7 @@ from random import shuffle
 #         print(e)
 
 FILE_I_END = 1
-path = 'D:/Ayudesee/Other/Data/ets-data-shuffled-9-9-cutoff/training_data-{}.npy'
+path = 'D:/Ayudesee/Other/Data/ets-data-shuffled-balanced/training_data-{}.npy'
 
 while True:
     file_name = path.format(FILE_I_END)
@@ -46,9 +49,9 @@ while True:
 WIDTH = 300
 HEIGHT = 200
 LR = 1e-3
-EPOCHS = 5
+EPOCHS = 20
 
-MODEL_NAME = '15-03-procv2-hsv'.format(EPOCHS, LR)
+MODEL_NAME = '07-06-2ranges-v1-4'  # .format(EPOCHS, LR)
 PREV_MODEL = ''
 logdir = f".\\logs\\{MODEL_NAME}"
 tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=logdir, profile_batch=5)
@@ -69,7 +72,7 @@ for e in range(EPOCHS):
         try:
             file_name = path.format(i)
             train_data = np.load(file_name, allow_pickle=True)
-            print(f'training_data-{i}.npy, _EPOCH:{e+1}, ({count+1}/{FILE_I_END-1})')
+            print(f'training_data-{i}.npy, _EPOCH:{e+1}/{EPOCHS}, ({count+1}/{FILE_I_END-1})')
 
             images = []
             keys = []
@@ -82,12 +85,12 @@ for e in range(EPOCHS):
             X = np.array(X).reshape(-1, HEIGHT, WIDTH, 3)
             Y = np.array(Y)
             test_x = np.array(test_x).reshape(-1, HEIGHT, WIDTH, 3)
-            # test_y = np.array(test_y)
+            test_y = np.array(test_y)
 
             X = process_images(X)
-            # test_x = process_images(test_x)
+            test_x = process_images(test_x)
 
-            model.fit(X, Y, epochs=1, batch_size=10, verbose=0)#, validation_data=(test_x, test_y), validation_freq=10, use_multiprocessing=True)# , callbacks=[tensorboard_callback])#, validation_data=(test_x, test_y), verbose=0)# , callbacks=tensorboard_callback)
+            history = model.fit(X, Y, epochs=1, batch_size=10, verbose=1, validation_data=(test_x, test_y), initial_epoch=e, callbacks=tensorboard_callback)  # , validation_freq=10, use_multiprocessing=True, callbacks=[tensorboard_callback])
             # model.train_on_batch(X, Y)
             # model.fit_generator((X, Y), steps_per_epoch= FILE_I_END-1)
 
@@ -97,5 +100,4 @@ for e in range(EPOCHS):
 
         except Exception as err:
             print(str(err))
-
 #tensorboard --logdir=D:/Ayudesee/Other/PyProj/ETS/logs

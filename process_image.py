@@ -1,12 +1,12 @@
 import cv2
 import numpy as np
-from test import proc_screen, find_traffic_light, transform2, sobel, lap
+from test import proc_screen, find_traffic_light, transform2, sobel, lap, find_lines_inrange
 
 
 def process_images(original_images):
     processed_images = []
     for original_image in original_images:
-        processed_images.append(process_image_v2(original_image))
+        processed_images.append(process_image(original_image))
 
     processed_images = np.array(processed_images)
     return processed_images
@@ -140,7 +140,23 @@ def process_image_v5(original_image):
     return processed_image
 
 
+def process_iamge_lap(original_image):
+    processed_image1 = lap(original_image)
+    processed_image2 = find_traffic_light(original_image)
+    processed_image = cv2.add(processed_image1, processed_image2)
+    return processed_image
+
+
+def process_image(original_image):  # all changes do here
+    processed_image1 = find_lines_inrange(original_image, 0, 0, 77, 255, 87, 255)
+    processed_image2 = find_traffic_light(original_image)
+    processed_image3 = find_lines_inrange(original_image, 98, 90, 123, 176, 255, 255)
+    processed_image = cv2.add(processed_image1, processed_image2)
+    processed_image = cv2.add(processed_image, processed_image3)
+
+    return processed_image
+
 # file = np.load(f"D:/Ayudesee/Other/Data/ets-data-raw-rgb/training_data-1.npy", allow_pickle=True)
-# screen = process_image_v2(file[0][0])
+# screen = process_image(file[0][0])
 # cv2.imshow('screen', screen)
 # cv2.waitKey(0)

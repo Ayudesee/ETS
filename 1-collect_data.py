@@ -69,7 +69,9 @@ def main(file_name, starting_value):
 
         if not paused:
             screen = grab_screen_rgb(640, 34, 1920, 834)
+            screen_speed = grab_screen_rgb(1594, 558, 1670, 576)
             screen = cv2.resize(screen, (WIDTH, HEIGHT))
+            screen[:18, :76, :] = screen_speed
 
             keys = key_check()
             output = keys_to_output(keys)
