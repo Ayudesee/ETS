@@ -3,7 +3,7 @@ import tensorflow as tf
 import os
 from sklearn.model_selection import train_test_split
 from process_image import process_images
-from alexnet import alexnet_model_modified
+from alexnet import alexnet_model_modified, alexnet_model_modified_v2
 from random import shuffle
 import matplotlib.pyplot as plt
 
@@ -58,7 +58,7 @@ tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=logdir, profile_ba
 
 LOAD_MODEL = False
 
-model = alexnet_model_modified(img_shape=(HEIGHT, WIDTH, 3), n_classes=9)
+model = alexnet_model_modified_v2(img_shape=(HEIGHT, WIDTH, 3), n_classes=9)
 
 if LOAD_MODEL:
     model.load(PREV_MODEL)
@@ -80,17 +80,17 @@ for e in range(EPOCHS):
                 images.append(data[0])
                 keys.append(data[1])
 
-            X, test_x, Y, test_y = train_test_split(images, keys, test_size=0.1)
+            X, test_x, Y, test_y = train_test_split(images, keys, test_size=0.01)
 
             X = np.array(X).reshape(-1, HEIGHT, WIDTH, 3)
             Y = np.array(Y)
-            test_x = np.array(test_x).reshape(-1, HEIGHT, WIDTH, 3)
-            test_y = np.array(test_y)
+            # test_x = np.array(test_x).reshape(-1, HEIGHT, WIDTH, 3)
+            # test_y = np.array(test_y)
 
             X = process_images(X)
-            test_x = process_images(test_x)
+            # test_x = process_images(test_x)
 
-            history = model.fit(X, Y, epochs=1, batch_size=10, verbose=1, validation_data=(test_x, test_y), callbacks=tensorboard_callback)  # , validation_freq=10, use_multiprocessing=True, callbacks=[tensorboard_callback])
+            model.fit(X, Y, epochs=1, batch_size=10, verbose=1, callbacks=tensorboard_callback)#  validation_data=(test_x, test_y))  # , validation_freq=10, use_multiprocessing=True, callbacks=[tensorboard_callback])
             # model.train_on_batch(X, Y)
             # model.fit_generator((X, Y), steps_per_epoch= FILE_I_END-1)
 

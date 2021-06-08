@@ -157,8 +157,8 @@ def process_image_2range(original_image):  # all changes do here
 
     return processed_image
 
-def process_image(original_image):
 
+def process_image(original_image):
     processed_image1 = lap(original_image)
     processed_image2 = find_traffic_light(original_image)
     processed_image = cv2.add(processed_image1, processed_image2)

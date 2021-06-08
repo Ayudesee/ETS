@@ -30,8 +30,8 @@ class MyCustomGenerator(tf.keras.utils.Sequence):
         batch_x = self.data[int(idx % (500 / self.batch_size)): int((idx % (500 / self.batch_size)) + self.batch_size), 0]
         batch_y = self.data[int(idx % (500 / self.batch_size)): int((idx % (500 / self.batch_size)) + self.batch_size), 1]
 
-        batch_x = process_images(batch_x)
-        # batch_x = np.array([np.reshape(_, (200, 300, 3)) for _ in batch_x])
+        # batch_x = process_images(batch_x)
+        batch_x = np.array([np.reshape(_, (200, 300, 3)) for _ in batch_x])
         batch_y = np.array([np.reshape(_, 9) for _ in batch_y])
 
         # cv2.imshow(f'{idx}', batch_x[0])
