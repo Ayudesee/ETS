@@ -21,7 +21,7 @@ EPOCHS = 10
 
 
 def main():
-    filepath = 'models/22-05-2ranges-v1.h5'
+    filepath = 'models/alexnet_v3_08-06-2021-15-43-46.h5'
     paused = False
 
     model = tf.keras.models.load_model(filepath=filepath)
@@ -36,12 +36,12 @@ def main():
             screen_speed = grab_screen_rgb(1594, 558, 1670, 576)
             screen = cv2.resize(screen, (WIDTH, HEIGHT))
             screen[:18, :76, :] = screen_speed
-            screen = process_image(screen)
+            # screen = process_image(screen)
             cv2.imshow('window', screen)
             cv2.waitKey(1)
 
             screen = np.reshape(screen, (-1, HEIGHT, WIDTH, 3))
-            prediction = model.predict(screen) * np.array([1, 0.1, 0.8, 0.8, 0.8, 0.8, 1, 1, 1])
+            prediction = model.predict(screen)
 
             mode_choice = np.argmax(prediction)
 

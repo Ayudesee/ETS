@@ -34,13 +34,15 @@ def main_func(start_file_number):
             # processed_image1 = proc_screen(screen[n][0])
             # processed_image1 = sobel(screen[n][0])
 
-            processed_image1 = lap(screen[n][0])
+            # processed_image1 = lap(screen[n][0])
             # processed_image1 = find_lines_inrange(screen[n][0], 0, 0, 77, 255, 87, 255)
             processed_image2 = find_traffic_light(screen[n][0])
             # processed_image3 = find_lines_inrange(screen[n][0], 98, 90, 123, 176, 255, 255)
+            processed_image1 = lanes(screen[n][0])
             processed_image = cv2.add(processed_image1, processed_image2)
             # processed_image = cv2.add(processed_image, processed_image3)
             # processed_image = find_lines_inrange(screen[n][0])
+            # processed_image = lanes(screen[n][0])
 
             cv2.imshow('raw', screen[n][0])
             cv2.imshow('processed', processed_image)
@@ -290,7 +292,23 @@ def lap(original_image):
     return processed_image
 
 
+def lanes(original_image):
+    canny_image = cv2.Canny(original_image, 90, 110, apertureSize=3)
+    mask = np.full_like(original_image, fill_value=0)
+    vertices_road = np.array([[90, 200], [100, 120], [200, 120], [210, 200]])
+    vertices_speed = np.array([[0, 0], [76, 0], [76, 19], [0, 19]])
+    cv2.fillPoly(mask, [vertices_road], 255)
+    # cv2.fillPoly(mask, [vertices_speed], 255)
+    canny_image = cv2.bitwise_and(cv2.cvtColor(canny_image, cv2.COLOR_GRAY2RGB), mask)
+    processed_image = canny_image
+    processed_image[:18, :76, :] = cv2.add(processed_image[:18, :76, :], original_image[:18, :76, :])
+    # cv2.imshow('canny', canny_image)
+
+    return processed_image
+
+
 # main_func(start_file_number=507)
+
 
 # find_color_with_taskbars()
 # find_edges_with_sobel()

@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from test import proc_screen, find_traffic_light, transform2, sobel, lap, find_lines_inrange
+from test import proc_screen, find_traffic_light, transform2, sobel, lap, find_lines_inrange, lanes
 
 
 def process_images(original_images):
@@ -158,7 +158,7 @@ def process_image_2range(original_image):  # all changes do here
     return processed_image
 
 
-def process_image(original_image):
+def process_image_v6(original_image):
     processed_image1 = lap(original_image)
     processed_image2 = find_traffic_light(original_image)
     processed_image = cv2.add(processed_image1, processed_image2)
@@ -166,10 +166,15 @@ def process_image(original_image):
 
     return processed_image
 
-# def process_image(original_image):  # all changes do here
-#     processed_image = cv2.normalize(original_image, None, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
-#
-#     return processed_image
+
+def process_image(original_image):
+    processed_image1 = lanes(original_image)
+    processed_image2 = find_traffic_light(original_image)
+    processed_image = cv2.add(processed_image1, processed_image2)
+    processed_image = cv2.normalize(processed_image, None, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
+
+    return processed_image
+
 # file = np.load(f"D:/Ayudesee/Other/Data/ets-data-raw-rgb/training_data-1.npy", allow_pickle=True)
 # screen = process_image(file[0][0])
 # cv2.imshow('screen', screen)

@@ -1,5 +1,6 @@
+import numpy as np
 import tensorflow as tf
-from alexnet import alexnet_model_modified, alexnet_model_modified_v2
+from alexnet import alexnet_model_modified, alexnet_model_modified_v2, alexnet_model_modified_v3
 from vgg_16 import vgg_16_modified
 from xception import xception
 from custom_generator import MyCustomGenerator
@@ -11,16 +12,17 @@ path_to_dataset_val = 'D:/Ayudesee/Other/Data/ets-data-shuffled-balanced_val'
 WIDTH = 300
 HEIGHT = 200
 
-MODEL_NAME = f'{datetime.datetime.now().strftime("%d-%m-%Y-%H-%M-%S")}'
+MODEL_NAME = f'alex_proc_v3_{datetime.datetime.now().strftime("%d-%m-%Y-%H-%M-%S")}'
 logdir = f".\\logs\\{MODEL_NAME}"
 
-tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=logdir, profile_batch=5)
+tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=logdir, histogram_freq=1, write_images=True)
 
 LOAD_MODEL = False
 
-# model = alexnet_model_modified(img_shape=(HEIGHT, WIDTH, 3), n_classes=9)
+
+model = alexnet_model_modified_v3(img_shape=(HEIGHT, WIDTH, 3), n_classes=9)
 # model = vgg_16_modified(img_shape=(HEIGHT, WIDTH, 3), n_classes=9)
-model = xception(img_shape=(HEIGHT, WIDTH, 3), n_classes=9)
+# model = xception(img_shape=(HEIGHT, WIDTH, 3), n_classes=9)
 
 if LOAD_MODEL:
     model.load(MODEL_NAME)
