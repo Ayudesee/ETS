@@ -30,21 +30,16 @@ def main_func(start_file_number):
             # cv2.line(screen[n][0], (105, 190), (145, 110), (255, 255, 0), 1)
             # cv2.line(screen[n][0], (155, 110), (195, 190), (255, 255, 0), 1)
 
-            # processed_image1 = transform2(screen[n][0])
-            # processed_image1 = proc_screen(screen[n][0])
-            # processed_image1 = sobel(screen[n][0])
-
-            # processed_image1 = lap(screen[n][0])
-            # processed_image1 = find_lines_inrange(screen[n][0], 0, 0, 77, 255, 87, 255)
-            processed_image2 = find_traffic_light(screen[n][0])
-            # processed_image3 = find_lines_inrange(screen[n][0], 98, 90, 123, 176, 255, 255)
-            processed_image1 = lanes(screen[n][0])
-            processed_image = cv2.add(processed_image1, processed_image2)
-            # processed_image = cv2.add(processed_image, processed_image3)
-            # processed_image = find_lines_inrange(screen[n][0])
-            # processed_image = lanes(screen[n][0])
+            processed_image1 = find_lines_inrange(screen[n][0], 26, 7, 157, 110, 187, 255)
+            processed_image2 = find_lines_inrange(screen[n][0], 0, 0, 62, 123, 70, 157)
+            processed_image3 = find_traffic_light(screen[n][0])
+            processed_image1[:18, :76, :] = screen[n][0][:18, :76, :]
+            processed_image = np.concatenate([processed_image1, processed_image2, processed_image3])
 
             cv2.imshow('raw', screen[n][0])
+            cv2.imshow('processed1', processed_image1)
+            cv2.imshow('processed2', processed_image2)
+            cv2.imshow('processed3', processed_image3)
             cv2.imshow('processed', processed_image)
             if cv2.waitKey(0) & 0xFF == ord('q'):  # next file
                 cv2.destroyAllWindows()
@@ -199,15 +194,24 @@ def find_lines_inrange(original_image, hue_lower, sat_lower, value_lower, hue_up
 
 
 def find_color_with_taskbars():  # 116, 86, 63 - 168, 255, 255
-    file = np.load(f"D:/Ayudesee/Other/Data/ets-data-raw-rgb/training_data-507.npy", allow_pickle=True)
-    original_image = file[0][0]
+    file = np.load(f"D:/Ayudesee/Other/Data/ets-data-raw-rgb/training_data-250.npy", allow_pickle=True)
+    original_image = file[371][0]
+    file2 = np.load(f"D:/Ayudesee/Other/Data/ets-data-raw-rgb/training_data-123.npy", allow_pickle=True)
+    original_image2 = file2[0][0]
+    file3 = np.load(f"D:/Ayudesee/Other/Data/ets-data-raw-rgb/training_data-55.npy", allow_pickle=True)
+    original_image3 = file3[0][0]
+
     cv2.namedWindow('Trackbars')
+
     hsv = cv2.cvtColor(original_image, cv2.COLOR_RGB2HSV)
-    cv2.createTrackbar("L - H", "Trackbars", 0, 180, nothing)
-    cv2.createTrackbar("L - S", "Trackbars", 0, 255, nothing)
-    cv2.createTrackbar("L - V", "Trackbars", 77, 255, nothing)
-    cv2.createTrackbar("U - H", "Trackbars", 255, 180, nothing)
-    cv2.createTrackbar("U - S", "Trackbars", 87, 255, nothing)
+    hsv2 = cv2.cvtColor(original_image2, cv2.COLOR_RGB2HSV)
+    hsv3 = cv2.cvtColor(original_image3, cv2.COLOR_RGB2HSV)
+
+    cv2.createTrackbar("L - H", "Trackbars", 26, 180, nothing)
+    cv2.createTrackbar("L - S", "Trackbars", 7, 255, nothing)
+    cv2.createTrackbar("L - V", "Trackbars", 157, 255, nothing)
+    cv2.createTrackbar("U - H", "Trackbars", 139, 180, nothing)
+    cv2.createTrackbar("U - S", "Trackbars", 187, 255, nothing)
     cv2.createTrackbar("U - V", "Trackbars", 255, 255, nothing)
 
     while True:
@@ -222,11 +226,22 @@ def find_color_with_taskbars():  # 116, 86, 63 - 168, 255, 255
         upper_red = np.array([u_h, u_s, u_v])
 
         mask = cv2.inRange(hsv, lower_red, upper_red)
+        mask2 = cv2.inRange(hsv2, lower_red, upper_red)
+        mask3 = cv2.inRange(hsv3, lower_red, upper_red)
 
         processed_image = cv2.bitwise_and(hsv, original_image, mask=mask)
-        cv2.imshow('hsv', mask)
+        processed_image2 = cv2.bitwise_and(hsv2, original_image2, mask=mask2)
+        processed_image3 = cv2.bitwise_and(hsv3, original_image3, mask=mask3)
+
+        cv2.imshow('mask', mask)
+        cv2.imshow('mask2', mask2)
+        cv2.imshow('mask3', mask3)
         cv2.imshow('raw', original_image)
+        cv2.imshow('raw2', original_image2)
+        cv2.imshow('raw3', original_image3)
         cv2.imshow('processed_image', processed_image)
+        cv2.imshow('processed_image2', processed_image2)
+        cv2.imshow('processed_image3', processed_image3)
         if cv2.waitKey(1) == 27:
             break
 
@@ -307,7 +322,7 @@ def lanes(original_image):
     return processed_image
 
 
-# main_func(start_file_number=507)
+# main_func(start_file_number=250)
 
 
 # find_color_with_taskbars()

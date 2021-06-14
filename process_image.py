@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from test import proc_screen, find_traffic_light, transform2, sobel, lap, find_lines_inrange, lanes
+from test import proc_screen, find_traffic_light, transform2, sobel, lap, find_lines_inrange
 
 
 def process_images(original_images):
@@ -9,6 +9,11 @@ def process_images(original_images):
         processed_images.append(process_image(original_image))
 
     processed_images = np.array(processed_images)
+
+    # processed_images1 = np.copy(processed_images[:, 0, :, :, :])
+    # processed_images2 = np.copy(processed_images[:, 1, :, :, :])
+    # processed_images3 = np.copy(processed_images[:, 2, :, :, :])
+    # return processed_images1, processed_images2, processed_images3
     return processed_images
 
 
@@ -168,12 +173,22 @@ def process_image_v6(original_image):
 
 
 def process_image(original_image):
-    processed_image1 = lanes(original_image)
-    processed_image2 = find_traffic_light(original_image)
-    processed_image = cv2.add(processed_image1, processed_image2)
-    processed_image = cv2.normalize(processed_image, None, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
+    processed_image1 = find_lines_inrange(original_image, 26, 7, 157, 110, 187, 255)
+    processed_image2 = find_lines_inrange(original_image, 0, 0, 62, 123, 70, 157)
+    processed_image3 = find_traffic_light(original_image)
+    processed_image1[:18, :76, :] = original_image[:18, :76, :]
+    processed_image1 = cv2.normalize(processed_image1, None, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
+    processed_image2 = cv2.normalize(processed_image2, None, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
+    processed_image3 = cv2.normalize(processed_image3, None, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
 
-    return processed_image
+    # processed_image = np.concatenate([processed_image1, processed_image2, processed_image3])
+    return processed_image1, processed_image2, processed_image3
+
+
+# def process_image(original_image):
+#     processed_image = cv2.normalize(original_image, None, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
+#
+#     return processed_image
 
 # file = np.load(f"D:/Ayudesee/Other/Data/ets-data-raw-rgb/training_data-1.npy", allow_pickle=True)
 # screen = process_image(file[0][0])

@@ -1,6 +1,6 @@
 import argparse
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Dropout, Activation, Flatten, Conv2D, MaxPooling2D, BatchNormalization, ZeroPadding2D, ConvLSTM2D
+from tensorflow.keras.layers import Dense, Dropout, Activation, Flatten, Conv2D, MaxPooling2D, BatchNormalization, Conv3D
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.regularizers import l2
 from tensorflow.keras.activations import elu
@@ -97,7 +97,29 @@ def alexnet_model_modified_v2(img_shape=(200, 300, 3), n_classes=9, weights=None
     return alexnet
 
 
-def alexnet_model_modified_v3(img_shape=(200, 300, 3), n_classes=10, l2_reg=0., weights=None):
+def alexnet_model_modified_v3(img_shape=(200, 300, 3), n_classes=10):
+    alexnet = Sequential()
+
+    # Layer 1
+    alexnet.add(Conv2D(16, (10, 10), strides=(5, 5), input_shape=img_shape, padding='same', activation='elu'))
+    alexnet.add(Conv2D(32, (5, 5), strides=(3, 3), padding='same', activation='elu'))
+    alexnet.add(Conv2D(64, (3, 3), padding='same', activation='elu'))
+    alexnet.add(Conv2D(64, (3, 3), padding='same', activation='elu'))
+    alexnet.add(Flatten())
+    alexnet.add(Dense(1024))
+    alexnet.add(Dropout(0.2))
+    alexnet.add(Dense(512))
+    alexnet.add(Dropout(0.2))
+    alexnet.add(Dense(128))
+    alexnet.add(Dense(n_classes))
+    alexnet.add(Activation('softmax'))
+
+    alexnet.compile(optimizer='Adam', loss='categorical_crossentropy', metrics=['accuracy'])
+    alexnet.summary()
+    return alexnet
+
+
+def alexnet_model_modified_v4(img_shape=(3, 200, 300, 3), n_classes=10, l2_reg=0., weights=None):
     alexnet = Sequential()
 
     # Layer 1

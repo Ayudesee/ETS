@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 
-testpack1 = 'D:/Ayudesee/Other/Data/ets-data-raw-rgb/training_data-50.npy'
+testpack1 = 'D:/Ayudesee/Other/Data/ets-data-raw-rgb/training_data-1.npy'
 
 image1 = np.load(testpack1, allow_pickle=True)
 
